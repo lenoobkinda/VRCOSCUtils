@@ -63,9 +63,6 @@ namespace VRChatify
             this.SessionHolder = new System.Windows.Forms.GroupBox();
             this.ForceUpdateSessions = new System.Windows.Forms.Button();
             this.groupBox2 = new System.Windows.Forms.GroupBox();
-            this.PresenceUpdateButton = new System.Windows.Forms.Button();
-            this.label1 = new System.Windows.Forms.Label();
-            this.presenceDetails = new System.Windows.Forms.TextBox();
             this.presenceToggle = new System.Windows.Forms.CheckBox();
             this.button1 = new System.Windows.Forms.Button();
             this.checkBox9 = new System.Windows.Forms.CheckBox();
@@ -74,6 +71,7 @@ namespace VRChatify
             this.groupBox5 = new System.Windows.Forms.GroupBox();
             this.fastColoredTextBox1 = new FastColoredTextBoxNS.FastColoredTextBox();
             this.fastColoredTextBox2 = new FastColoredTextBoxNS.FastColoredTextBox();
+            this.checkBox12 = new System.Windows.Forms.CheckBox();
             this.groupBox7.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.fastColoredTextBox3)).BeginInit();
             this.groupBox6.SuspendLayout();
@@ -129,7 +127,6 @@ namespace VRChatify
             this.fastColoredTextBox3.Cursor = System.Windows.Forms.Cursors.IBeam;
             this.fastColoredTextBox3.DisabledColor = System.Drawing.Color.FromArgb(((int)(((byte)(100)))), ((int)(((byte)(180)))), ((int)(((byte)(180)))), ((int)(((byte)(180)))));
             this.fastColoredTextBox3.FoldingIndicatorColor = System.Drawing.Color.White;
-            this.fastColoredTextBox3.Font = new System.Drawing.Font("Courier New", 9.75F);
             this.fastColoredTextBox3.ForeColor = System.Drawing.Color.White;
             this.fastColoredTextBox3.IndentBackColor = System.Drawing.Color.Black;
             this.fastColoredTextBox3.IsReplaceMode = false;
@@ -153,7 +150,7 @@ namespace VRChatify
             this.button5.Name = "button5";
             this.button5.Size = new System.Drawing.Size(88, 23);
             this.button5.TabIndex = 26;
-            this.button5.Text = "Save Config";
+            this.button5.Text = "Save Text";
             this.button5.UseVisualStyleBackColor = false;
             this.button5.Click += new System.EventHandler(this.button5_Click);
             // 
@@ -163,7 +160,7 @@ namespace VRChatify
             this.button6.Name = "button6";
             this.button6.Size = new System.Drawing.Size(78, 23);
             this.button6.TabIndex = 25;
-            this.button6.Text = "Load Config";
+            this.button6.Text = "Load Text";
             this.button6.UseVisualStyleBackColor = true;
             this.button6.Click += new System.EventHandler(this.button6_Click);
             // 
@@ -203,6 +200,7 @@ namespace VRChatify
             // 
             // groupBox1
             // 
+            this.groupBox1.Controls.Add(this.checkBox12);
             this.groupBox1.Controls.Add(this.checkBox11);
             this.groupBox1.Controls.Add(this.checkBox8);
             this.groupBox1.Controls.Add(this.checkBox7);
@@ -331,13 +329,13 @@ namespace VRChatify
             // 
             // OSCToggle
             // 
-            this.OSCToggle.AutoSize = true;
+            this.OSCToggle.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.OSCToggle.ForeColor = System.Drawing.SystemColors.ControlLight;
-            this.OSCToggle.Location = new System.Drawing.Point(9, 19);
+            this.OSCToggle.Location = new System.Drawing.Point(81, 14);
             this.OSCToggle.Name = "OSCToggle";
-            this.OSCToggle.Size = new System.Drawing.Size(122, 17);
+            this.OSCToggle.Size = new System.Drawing.Size(133, 33);
             this.OSCToggle.TabIndex = 2;
-            this.OSCToggle.Text = "OSC Message Send";
+            this.OSCToggle.Text = "Send To Osc";
             this.OSCToggle.UseVisualStyleBackColor = true;
             this.OSCToggle.CheckedChanged += new System.EventHandler(this.OSCToggle_CheckedChanged);
             // 
@@ -347,7 +345,7 @@ namespace VRChatify
             this.button2.Name = "button2";
             this.button2.Size = new System.Drawing.Size(88, 23);
             this.button2.TabIndex = 14;
-            this.button2.Text = "Save Config";
+            this.button2.Text = "Save Text";
             this.button2.UseVisualStyleBackColor = true;
             this.button2.Click += new System.EventHandler(this.button2_Click);
             // 
@@ -476,48 +474,15 @@ namespace VRChatify
             // 
             // groupBox2
             // 
-            this.groupBox2.Controls.Add(this.PresenceUpdateButton);
-            this.groupBox2.Controls.Add(this.label1);
-            this.groupBox2.Controls.Add(this.presenceDetails);
             this.groupBox2.Controls.Add(this.presenceToggle);
             this.groupBox2.ForeColor = System.Drawing.SystemColors.ControlLight;
             this.groupBox2.Location = new System.Drawing.Point(12, 151);
             this.groupBox2.Name = "groupBox2";
-            this.groupBox2.Size = new System.Drawing.Size(274, 115);
+            this.groupBox2.Size = new System.Drawing.Size(274, 46);
             this.groupBox2.TabIndex = 6;
             this.groupBox2.TabStop = false;
             this.groupBox2.Text = "Discord Presence";
             this.groupBox2.Enter += new System.EventHandler(this.groupBox2_Enter);
-            // 
-            // PresenceUpdateButton
-            // 
-            this.PresenceUpdateButton.ForeColor = System.Drawing.SystemColors.ControlText;
-            this.PresenceUpdateButton.Location = new System.Drawing.Point(6, 81);
-            this.PresenceUpdateButton.Name = "PresenceUpdateButton";
-            this.PresenceUpdateButton.Size = new System.Drawing.Size(97, 23);
-            this.PresenceUpdateButton.TabIndex = 3;
-            this.PresenceUpdateButton.Text = "Update";
-            this.PresenceUpdateButton.UseVisualStyleBackColor = true;
-            this.PresenceUpdateButton.Click += new System.EventHandler(this.PresenceUpdateButton_Click);
-            // 
-            // label1
-            // 
-            this.label1.AutoSize = true;
-            this.label1.Location = new System.Drawing.Point(6, 39);
-            this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(76, 13);
-            this.label1.TabIndex = 2;
-            this.label1.Text = "Presence Text";
-            this.label1.Click += new System.EventHandler(this.label1_Click);
-            // 
-            // presenceDetails
-            // 
-            this.presenceDetails.Location = new System.Drawing.Point(6, 55);
-            this.presenceDetails.Name = "presenceDetails";
-            this.presenceDetails.Size = new System.Drawing.Size(100, 20);
-            this.presenceDetails.TabIndex = 1;
-            this.presenceDetails.Text = "Using VRchatify";
-            this.presenceDetails.TextChanged += new System.EventHandler(this.presenceDetails_TextChanged);
             // 
             // presenceToggle
             // 
@@ -538,7 +503,7 @@ namespace VRChatify
             this.button1.Name = "button1";
             this.button1.Size = new System.Drawing.Size(78, 23);
             this.button1.TabIndex = 13;
-            this.button1.Text = "Load Config";
+            this.button1.Text = "Load Text";
             this.button1.UseVisualStyleBackColor = true;
             this.button1.Click += new System.EventHandler(this.button1_Click);
             // 
@@ -606,6 +571,7 @@ namespace VRChatify
             this.fastColoredTextBox1.CharWidth = 8;
             this.fastColoredTextBox1.Cursor = System.Windows.Forms.Cursors.IBeam;
             this.fastColoredTextBox1.DisabledColor = System.Drawing.Color.FromArgb(((int)(((byte)(100)))), ((int)(((byte)(180)))), ((int)(((byte)(180)))), ((int)(((byte)(180)))));
+            this.fastColoredTextBox1.Font = new System.Drawing.Font("Courier New", 9.75F);
             this.fastColoredTextBox1.ForeColor = System.Drawing.SystemColors.Window;
             this.fastColoredTextBox1.IndentBackColor = System.Drawing.Color.Black;
             this.fastColoredTextBox1.IsReplaceMode = false;
@@ -640,7 +606,6 @@ namespace VRChatify
             this.fastColoredTextBox2.CharWidth = 8;
             this.fastColoredTextBox2.Cursor = System.Windows.Forms.Cursors.IBeam;
             this.fastColoredTextBox2.DisabledColor = System.Drawing.Color.FromArgb(((int)(((byte)(100)))), ((int)(((byte)(180)))), ((int)(((byte)(180)))), ((int)(((byte)(180)))));
-            this.fastColoredTextBox2.Font = new System.Drawing.Font("Courier New", 9.75F);
             this.fastColoredTextBox2.ForeColor = System.Drawing.SystemColors.Window;
             this.fastColoredTextBox2.IndentBackColor = System.Drawing.Color.Black;
             this.fastColoredTextBox2.IsReplaceMode = false;
@@ -655,6 +620,17 @@ namespace VRChatify
             this.fastColoredTextBox2.Zoom = 100;
             this.fastColoredTextBox2.TextChangedDelayed += new System.EventHandler<FastColoredTextBoxNS.TextChangedEventArgs>(this.S);
             this.fastColoredTextBox2.Load += new System.EventHandler(this.fastColoredTextBox2_Load);
+            // 
+            // checkBox12
+            // 
+            this.checkBox12.AutoSize = true;
+            this.checkBox12.ForeColor = System.Drawing.SystemColors.ControlLightLight;
+            this.checkBox12.Location = new System.Drawing.Point(161, 99);
+            this.checkBox12.Name = "checkBox12";
+            this.checkBox12.Size = new System.Drawing.Size(61, 17);
+            this.checkBox12.TabIndex = 13;
+            this.checkBox12.Text = "Custom";
+            this.checkBox12.UseVisualStyleBackColor = true;
             // 
             // MainWindow
             // 
@@ -730,9 +706,6 @@ namespace VRChatify
         private System.Windows.Forms.GroupBox SessionHolder;
         private System.Windows.Forms.Button ForceUpdateSessions;
         private System.Windows.Forms.GroupBox groupBox2;
-        private System.Windows.Forms.Button PresenceUpdateButton;
-        private System.Windows.Forms.Label label1;
-        private System.Windows.Forms.TextBox presenceDetails;
         private System.Windows.Forms.CheckBox presenceToggle;
         private System.Windows.Forms.Button button1;
         private System.Windows.Forms.CheckBox checkBox9;
@@ -744,5 +717,6 @@ namespace VRChatify
         public FastColoredTextBoxNS.FastColoredTextBox fastColoredTextBox3;
         private System.Windows.Forms.CheckBox checkBox8;
         private System.Windows.Forms.CheckBox checkBox11;
+        private System.Windows.Forms.CheckBox checkBox12;
     }
 }

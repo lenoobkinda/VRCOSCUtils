@@ -10,6 +10,8 @@ using Windows.ApplicationModel.Store;
 using System.Runtime.CompilerServices;
 using System.Security.Claims;
 using System.Text;
+using System.Timers;
+using System.IO;
 
 namespace VRChatify
 {
@@ -105,6 +107,10 @@ namespace VRChatify
             long dt = 2000;
             lock (sync)
             {
+                if (MainWindow.rpc == true)
+                {
+                    PresenceManager.UpdateDetails(MainWindow.currentdetails);
+                }
                 t2 = VRChatify.watch.ElapsedMilliseconds;
                 t1 = t2 - dt;
 
@@ -125,6 +131,7 @@ namespace VRChatify
                 (mainWindow.richTextBox1.Text.Contains("{TIME}") == true ? new Action(() => MainWindow.oscMsg.Replace("{TIME}", $"{DateTime.Now.ToString("h:mm:ss tt")}")) : new Action(MainWindow.joemethod))();
                 (mainWindow.richTextBox1.Text.Contains("{TABBEDV2}") == true ? new Action(() => MainWindow.oscMsg.Replace("{TABBEDV2}", $"{MainWindow.GetActiveWindow()}")) : new Action(MainWindow.joemethod))();
                 (mainWindow.richTextBox1.Text.Contains("{CLEARBOX}") == true ? new Action(() => MainWindow.oscMsg.Replace("{CLEARBOX}", $"\u0003\u001f")) : new Action(MainWindow.joemethod))();
+                (mainWindow.richTextBox1.Text.Contains("{ALBUM}") == true ? new Action(() => MainWindow.oscMsg.Replace("{ALBUM}", $"{VRChatify.mediaManager.GetAlbumTitle()}")) : new Action(MainWindow.joemethod))();
 
                 VRChatify.SendChatMessage(MainWindow.oscMsg.ToString());
 
@@ -133,28 +140,40 @@ namespace VRChatify
 
             }
         }
+        static bool cooldown = false;
         public static void SendChatMessage(string message)
         {
-            if (MainWindow.InvisibleBox == true)
+            if (cooldown == false)
             {
-                oscSender.Send(new OscMessage("/chatbox/input", message, true, false));
+                if (MainWindow.InvisibleBox == true)
+                {
+                    oscSender.Send(new OscMessage("/chatbox/input", message, true, false));
 
+                }
+                else
+                {
+                    oscSender.Send(new OscMessage("/chatbox/input", message, true, false));
+                }
+                VRChatifyUtils.DebugLog($"Sent:\n{message}\n");
+                if (time > 9)
+                {
+                    lastlog = "";
+                    time = 0;
+                }
+                mainWindow.label2.Text = lastlog + $"\n[Debug] {message}";
+                lastlog = mainWindow.label2.Text;
+                time += 1;
+                CurrentSongCheck = CurrentSong;
+                cooldown = true;
+                System.Timers.Timer tim = new System.Timers.Timer();
+                tim.Elapsed += new ElapsedEventHandler(OnTimedEvent);
+                tim.Interval = 2000;
+                tim.Enabled = true;
             }
-            else
-            {
-                oscSender.Send(new OscMessage("/chatbox/input", message, true, false));
-
-            }
-            VRChatifyUtils.DebugLog($"Sent:\n{message}\n");
-            if (time > 9)
-            {
-                lastlog = "";
-                time = 0;
-            }
-            mainWindow.label2.Text = lastlog + $"\n[Debug] {message}";
-            lastlog = mainWindow.label2.Text;
-            time += 1;
-            CurrentSongCheck = CurrentSong;
+        }
+        private static void OnTimedEvent(object source, ElapsedEventArgs e)
+        {
+            cooldown = false;
         }
         static void EtwThreadProc()
         {
@@ -171,7 +190,7 @@ namespace VRChatify
             //Console.ReadLine();
 #if !DEBUG
             oscSender = new UDPSender("127.0.0.1", 9000);
-
+           
             oscReceiver = new UDPListener(9001, OnOscPacket);
             mediaManager = new VMediaManager();
             mediaManager.Init();
@@ -183,10 +202,8 @@ namespace VRChatify
             m_EtwSession.EnableProvider("Microsoft-Windows-D3D9");
             m_EtwSession.EnableProvider("Microsoft-Windows-DXGI");
 
-            //handle event
             m_EtwSession.Source.AllEvents += data =>
             {
-                //filter out frame presentation events
                 if (((int)data.ID == EventID_D3D9PresentStart && data.ProviderGuid == D3D9_provider) ||
                 ((int)data.ID == EventID_DxgiPresentStart && data.ProviderGuid == DXGI_provider))
                 {
@@ -197,7 +214,6 @@ namespace VRChatify
                     {
                         t = watch.ElapsedMilliseconds;
 
-                        //if process is not yet in Dictionary, add it
                         if (!frames.ContainsKey(pid))
                         {
                             frames[pid] = new TimestampCollection();
@@ -216,7 +232,6 @@ namespace VRChatify
                             frames[pid].Name = name;
                         }
 
-                        //store frame timestamp in collection
                         frames[pid].Add(t);
                     }
                 }
@@ -300,6 +315,7 @@ namespace VRChatify
 
         private static void DynamicButton_Click(object sender, EventArgs e)
         {
+            VMediaManager.spotify = false;
             Button btn = (Button)sender;
             mediaManager.setCurrentSession(mediaManager.GetMediaManager().CurrentMediaSessions[btn.Name]);
             VRChatifyUtils.DebugLog($"Current session set to: {btn.Name}");

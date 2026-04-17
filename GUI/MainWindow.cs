@@ -12,6 +12,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Diagnostics;
+using WindowsMediaController;
+using System.Windows;
 
 namespace VRChatify
 {
@@ -56,27 +59,19 @@ namespace VRChatify
         }
         public static string GetFocused()
         {
-            // Get the handle of the foreground window
             IntPtr foregroundWindow = GetForegroundWindow();
 
-            // Get the process ID of the foreground window
             GetWindowThreadProcessId(foregroundWindow, out uint processId);
 
-            // Get a handle to the process
             IntPtr processHandle = OpenProcess(PROCESS_QUERY_INFORMATION | PROCESS_VM_READ, false, processId);
 
-            // Get the process name
             StringBuilder processName = new StringBuilder((int)MAX_PATH);
             if (GetModuleBaseNameA(processHandle, IntPtr.Zero, processName, MAX_PATH) == 0)
             {
-                // If it's null, assume it's VRChat
                 CloseHandle(processHandle);
                 return "VRChat";
             }
 
-            // Print the process name
-
-            // Close the process handle
             CloseHandle(processHandle);
 
             return processName.ToString();
@@ -95,19 +90,92 @@ namespace VRChatify
             ClanTag.Text = Config.GetConfig("clantag") ?? "VRChatify";
             VRChatify.ClanTagStrings = VRChatifyUtils.ClanTagText(ClanTag.Text);
             UpdateSessionList();
+            if (File.Exists(Environment.CurrentDirectory + "\\customconfig.txt"))
+            {
+                richTextBox1.Text = File.ReadAllText(Environment.CurrentDirectory + "\\customconfig.txt");
+            }
+            try
+            {
+                VRChatify.mediaManager.setCurrentSession(VRChatify.mediaManager.GetMediaManager().CurrentMediaSessions["Spotify.exe"]);
+                Console.WriteLine("Set session to spotify");
 
+            }
+            catch
+            {
+
+            }
+            var cfg = UserConfig.LoadOrCreateDefault();
+
+            if (cfg == null)
+            {
+                cfg = new UserConfig.Settings
+                {
+                    Spotify = false,
+                    Stats = false,
+                    FPS = false,
+                    Clant = false,
+                    LocalTime = false,
+                    Tabbed = false,
+                    InvisibleBox = false,
+                    Animated = false,
+                    Lyrics = false,
+                    IsCustom = false,
+                    Debugging = false,
+                    Rpc = false,
+                    ClanTag = Config.GetConfig("clantag") ?? string.Empty
+                };
+            }
+
+            checkBox1.Checked = cfg.Spotify;
+            checkBox2.Checked = cfg.Stats;
+            checkBox3.Checked = cfg.FPS;
+            checkBox4.Checked = cfg.Clant;
+            checkBox5.Checked = cfg.LocalTime;
+            checkBox7.Checked = cfg.Tabbed;
+            checkBox9.Checked = cfg.Animated;
+            checkBox8.Checked = cfg.Lyrics;
+            checkBox6.Checked = cfg.IsCustom;
+            checkBox11.Checked = cfg.InvisibleBox;
+            DebugLogging.Checked = cfg.Debugging;
+            presenceToggle.Checked = cfg.Rpc;
+
+            if (!string.IsNullOrWhiteSpace(cfg.ClanTag))
+            {
+                ClanTag.Text = cfg.ClanTag;
+                VRChatify.ClanTagStrings = VRChatifyUtils.ClanTagText(ClanTag.Text);
+                VRChatify.ClanTagIndex = 0;
+            }
+
+            MainWindow.Spotify = cfg.Spotify;
+            MainWindow.Stats = cfg.Stats;
+            MainWindow.Clant = cfg.Clant;
+            MainWindow.FPS = cfg.FPS;
+            MainWindow.LocalTime = cfg.LocalTime;
+            MainWindow.Tabbed = cfg.Tabbed;
+            MainWindow.InvisibleBox = cfg.InvisibleBox;
+            MainWindow.Animated = cfg.Animated;
+            MainWindow.Lyrics = cfg.Lyrics;
+            MainWindow.IsCustom = cfg.IsCustom;
+            VRChatify.debugging = cfg.Debugging;
+            MainWindow.rpc = cfg.Rpc;
+
+            UserConfig.Save();
         }
 
         private void PresenceToggle_CheckedChanged(object sender, EventArgs e)
         {
+            rpc = presenceToggle.Checked;
             if (presenceToggle.Checked)
             {
+
                 PresenceManager.InitRPC();
             }
             else
             {
                 PresenceManager.KillRPC();
             }
+
+            UserConfig.Save();
         }
         public static StringBuilder oscMsg = new StringBuilder();
         public static void AppendToSB(string par)
@@ -124,9 +192,9 @@ namespace VRChatify
         }
         private void OSCToggle_CheckedChanged(object sender, EventArgs e)
         {
-            //if checkbox checked start 5 second repeating timer else stop it 
             if (OSCToggle.Checked)
             {
+                IsSend = OSCToggle.Checked;
                 foreach (var x in VRChatify.frames.Values)
                 {
                     if (x.Name == "VRChat")
@@ -134,12 +202,10 @@ namespace VRChatify
                         vrcproc = x;
                     }
                 }
-                // oscMsg = new StringBuilder();
                 
                 (Spotify == true ? new Action(() => AppendToSB($"{VRChatify.mediaManager.GetSongArtist()} - {VRChatify.mediaManager.GetSongName()} || {VMediaManager.currentSession.ControlSession.GetTimelineProperties().Position.ToString(@"mm\:ss")}/{VMediaManager.currentSession.ControlSession.GetTimelineProperties().EndTime.ToString(@"mm\:ss")}")) : new Action(joemethod))();
                 (FPS == true ? new Action(() => AppendToSB($" || FPS: {VRChatify.currentfps}")) : new Action(joemethod))();
                 (Tabbed == true ? new Action(() => AppendToSB($" || Focused In: {GetFocused()}")) : new Action(joemethod))();
-               // (Tabbed == true ? new Action(() => AppendToSB($" || Focused In: {GetFocused()}")) : new Action(joemethod))();
 
                 (Stats == true ? new Action(() => AppendToSB($" || CPU: {Math.Round(VRChatifyUtils.GetCpuUsage()).ToString()}% || RAM: {VRChatifyUtils.GetRamUsage()}% || GPU: {VRChatifyUtils.GetGPUUsage()}")) : new Action(joemethod))();
                 (Animated == true ? new Action(() => AppendToSB($" || {currentanimstr}")) : new Action(joemethod))();
@@ -176,22 +242,22 @@ namespace VRChatify
                 oscMsg.Clear();
                 
             }
+            UserConfig.Save();
         }
         public static string currentlyrics = "";
+        public static bool rpc = false;
 
-       // public static Thread strthread;
 
         private static void SetTimer()
         {
-            // Create a timer with a two second interval.
             OSCTimer = new System.Timers.Timer(2500);
-            // Hook up the Elapsed event for the timer. 
             OSCTimer.Elapsed += OnTimedEvent;
             OSCTimer.AutoReset = true;
             OSCTimer.Enabled = true;
         }
         static object sync = new object();
         public static bool IsCustom = false;
+        public static bool IsSend = false;
 
         public static bool Lyrics = false;
         public static TimestampCollection vrcproc;
@@ -204,12 +270,14 @@ namespace VRChatify
                 
                 t2 = VRChatify.watch.ElapsedMilliseconds;
                 t1 = t2 - dt;
-
                 int count = vrcproc.QueryCount(t1, t2);
                 if (IsCustom == false)
                 {
 
-
+                    if (MainWindow.rpc == true)
+                    {
+                        PresenceManager.UpdateDetails(MainWindow.currentdetails);
+                    }
                     (Spotify == true ? new Action(() => AppendToSB($"{VRChatify.mediaManager.GetSongArtist()} - {VRChatify.mediaManager.GetSongName()} || {VMediaManager.currentSession.ControlSession.GetTimelineProperties().Position.ToString(@"mm\:ss")}/{VMediaManager.currentSession.ControlSession.GetTimelineProperties().EndTime.ToString(@"mm\:ss")}")) : new Action(joemethod))();
                     (Lyrics == true ? new Action(() => AppendToSB($" || {VRChatify.mediaManager.GetLyrics().Result}")) : new Action(joemethod))();
 
@@ -255,6 +323,8 @@ namespace VRChatify
                         VRChatify.ClanTagIndex += 1;
                     }
                 }
+           //     PresenceManager.Update();
+
             }
 
         }
@@ -267,7 +337,6 @@ namespace VRChatify
 
         private void PresenceUpdateButton_Click(object sender, EventArgs e)
         {
-            PresenceManager.UpdateDetails(presenceDetails.Text);
         }
 
         private void ForceUpdateSessions_Click(object sender, EventArgs e) => UpdateSessionList();
@@ -280,6 +349,7 @@ namespace VRChatify
                 VRChatifyUtils.DebugLog($"Adding Buton {item.Text}");
                 SessionHolder.Invoke(new MethodInvoker(delegate { SessionHolder.Controls.Add(item); }));
                 VRChatifyUtils.DebugLog($"Added Buton {item.Text}");
+
             }
         }
         public static bool Spotify = false;
@@ -295,6 +365,7 @@ namespace VRChatify
         private void DebugLogging_CheckedChanged(object sender, EventArgs e)
         {
             VRChatify.debugging = DebugLogging.Checked;
+            UserConfig.Save();
         }
 
         private void ClanTag_TextChanged(object sender, EventArgs e)
@@ -306,6 +377,7 @@ namespace VRChatify
             }
             VRChatify.ClanTagStrings = VRChatifyUtils.ClanTagText(ClanTag.Text);
             VRChatify.ClanTagIndex = 0;
+            UserConfig.Save();
         }
 
         private void listBox1_SelectedIndexChanged(object sender, EventArgs e)
@@ -317,34 +389,35 @@ namespace VRChatify
         {
             //LOCAL TIME TOGGLE
             LocalTime = checkBox5.Checked;
+            UserConfig.Save();
         }
 
         private void checkBox1_CheckedChanged(object sender, EventArgs e)
         {
-            //SPOTIFY TOGGLE
+            // SPOTIFY TOGGLE
             Spotify = checkBox1.Checked;
-
+            UserConfig.Save();
         }
 
         private void checkBox2_CheckedChanged(object sender, EventArgs e)
         {
-            //STATS TOGGLE
+            // STATS TOGGLE
             Stats = checkBox2.Checked;
-
+            UserConfig.Save();
         }
 
         private void checkBox3_CheckedChanged(object sender, EventArgs e)
         {
-            //FPS TOGGLE
+            // FPS TOGGLE
             FPS = checkBox3.Checked;
-
+            UserConfig.Save();
         }
 
         private void checkBox4_CheckedChanged(object sender, EventArgs e)
         {
-            //CLANTAG TOGGLE
+            // CLANTAG TOGGLE
             Clant = checkBox4.Checked;
-
+            UserConfig.Save();
         }
 
         private void listView1_SelectedIndexChanged(object sender, EventArgs e)
@@ -380,6 +453,7 @@ namespace VRChatify
         private void checkBox6_CheckedChanged(object sender, EventArgs e)
         {
             IsCustom = checkBox6.Checked;
+            UserConfig.Save();
         }
         public static string test = "";
         private void button1_Click(object sender, EventArgs e)
@@ -437,7 +511,7 @@ namespace VRChatify
         private void checkBox7_CheckedChanged(object sender, EventArgs e)
         {
             Tabbed = checkBox7.Checked;
-
+            UserConfig.Save();
         }
       
 
@@ -516,7 +590,7 @@ namespace VRChatify
         private void checkBox9_CheckedChanged(object sender, EventArgs e)
         {
             Animated = checkBox9.Checked;
-
+            UserConfig.Save();
         }
 
         private void Sessions_SelectedIndexChanged(object sender, EventArgs e)
@@ -541,7 +615,6 @@ namespace VRChatify
 
         private void presenceDetails_TextChanged(object sender, EventArgs e)
         {
-
         }
 
         private void groupBox3_Enter(object sender, EventArgs e)
@@ -639,13 +712,13 @@ namespace VRChatify
             }
 
         }
-
+        public static string currentdetails;
         private void richTextBox1_TextChanged_1(object sender, EventArgs e)
         {
 
         }
 
-        private void groupBox5_DragDrop(object sender, DragEventArgs e)
+        private void groupBox5_DragDrop(object sender, System.Windows.Forms.DragEventArgs e)
         {
 
         }
@@ -728,11 +801,13 @@ namespace VRChatify
         private void checkBox8_CheckedChanged_1(object sender, EventArgs e)
         {
             Lyrics = checkBox8.Checked;
+            UserConfig.Save();
         }
 
         private void checkBox11_CheckedChanged(object sender, EventArgs e)
         {
             InvisibleBox = checkBox11.Checked;
+            UserConfig.Save();
         }
     }
 }

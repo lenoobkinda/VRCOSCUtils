@@ -30,7 +30,6 @@ namespace VRChatify
             Console.Write("[");
             Console.Write($"{DateTime.Now}", System.Drawing.Color.Green);
             Console.Write("] ");
-
             Console.Write("[");
             Console.Write("VRChatify", System.Drawing.Color.Green);
             Console.Write("] ");
